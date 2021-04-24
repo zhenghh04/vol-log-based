@@ -3,7 +3,7 @@
 This software repository contains source codes implementing an [HDF5](https://www.hdfgroup.org) Virtual Object Layer ([VOL](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/developer_guide/main.pdf))) plugin that stores HDF5 datasets in a log-based storage layout. It allows applications to generate efficient log-based I/O requests using HDF5 APIs.
 
 ### Software Requirements
-* [HDF5 1.12.0](https://github.com/HDFGroup/hdf5/tree/1.12/master)
+* [HDF5 1.12.0](https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_1_12_0/source/hdf5-1.12.0.tar.gz)
   + Parallel I/O support (--enable-parallel) is required
 * MPI C and C++ compilers
   + The plugin uses the constant initializer; a C++ compiler supporting std 11 is required
@@ -15,16 +15,16 @@ This software repository contains source codes implementing an [HDF5](https://ww
 
 ### Building Steps
 * Build HDF5 with VOL and parallel I/O support
-  + Clone the develop branch from the HDF5 repository
+  + Download HDF5 source code
   + Run command ./autogen.sh
   + Configure HDF5 with parallel I/O enabled
   + Run make install
   + Example commands are given below. This example will install
     the HD5 library under the folder `${HOME}/HDF5`.
     ```
-    % git clone https://github.com/HDFGroup/hdf5.git
-    % cd hdf5
-    % git checkout hdf5-1_12_0
+    % wget https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_1_12_0/source/hdf5-1.12.0.tar.gz
+    % tar -zxf hdf5-1.12.0.tar.gz 
+    % cd hdf5-1.12.0
     % ./autogen
     % ./configure --prefix=${HOME}/HDF5 --enable-parallel CC=mpicc
     % make -j4 install
@@ -37,7 +37,7 @@ This software repository contains source codes implementing an [HDF5](https://ww
     + Compile with zlib library to enable metadata compression
   + Example commands are given below.
     ```
-    % git clone https://github.com/DataLib-ECP/log_io_vol.git
+    % git clone https://github.com/DataLib-ECP/vol-log-based.git
     % cd log_io_vol
     % autoreconf -i
     % ./configure --prefix=${HOME}/Log_IO_VOL --with-hdf5=${HOME}/HDF5 --enable-shared --enable-zlib
@@ -100,10 +100,14 @@ This software repository contains source codes implementing an [HDF5](https://ww
     + Feature to read datasets in log-based storage layout is under development
   + Utility to repack dataset in log-based storage layout into conventional storage layout is under development 
 
+### Developers
+* Kai-yuan Hou <kai-yuanhou2020@u.northwestern.edu>
+* Wei-keng Liao <wkliao@northwestern.edu>
+
 ### References
 * [HDF5 VOL application developer manual](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/developer_guide/main.pdf)
 * [HDF5 VOL plug-in developer manual](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/user_guide)
 * [HDF5 VOL RFC](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/RFC)
 
 ### Project funding supports:
-Ongoing development and maintenance of Log-based VOL are supported by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy's Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation's exascale computing imperative.
+This research was supported by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative. 
