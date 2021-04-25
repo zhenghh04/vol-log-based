@@ -35,15 +35,34 @@ This software repository contains source codes implementing an [HDF5](https://ww
   + Configure log-based VOL 
     + Shared library is required to enable log-based VOL by environment variables
     + Compile with zlib library to enable metadata compression
+  + Run test programs (make check) to check whether the VOl is working properly
   + Example commands are given below.
     ```
     % git clone https://github.com/DataLib-ECP/vol-log-based.git
     % cd log_io_vol
     % autoreconf -i
     % ./configure --prefix=${HOME}/Log_IO_VOL --with-hdf5=${HOME}/HDF5 --enable-shared --enable-zlib
-    % make -j 4 install
+    % make -j 4
+    % make check
+    % make install
     ```
     The VOL plugin library is now installed under the folder `${HOME}/Log_IO_VOL.`
+
+### Running example programs
+* Build the log-based VOL
+* Compile the example programs under the example directory
+  + Run `make <program name>` to compile an example program
+  + Running `make tests` will compile all example programs
+* Run the example programs
+  + Run `make check` to run all example programs as test programs
+* Example commands are given below. This example will install
+    the HD5 library under the folder `${HOME}/HDF5`.
+    ```
+    % cd example
+    % make create_open
+    % ./create_open
+    Writing file_name = test.h5 at rank 0 
+    ```
 
 ### Compile user programs that use this VOL plugin
 * Enable log-based VOL programmatically
@@ -100,14 +119,14 @@ This software repository contains source codes implementing an [HDF5](https://ww
     + Feature to read datasets in log-based storage layout is under development
   + Utility to repack dataset in log-based storage layout into conventional storage layout is under development 
 
-### Developers
-* Kai-yuan Hou <kai-yuanhou2020@u.northwestern.edu>
-* Wei-keng Liao <wkliao@northwestern.edu>
-
 ### References
 * [HDF5 VOL application developer manual](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/developer_guide/main.pdf)
 * [HDF5 VOL plug-in developer manual](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/user_guide)
 * [HDF5 VOL RFC](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/RFC)
+
+### Developers
+* Kai-yuan Hou <kai-yuanhou2020@u.northwestern.edu>
+* Wei-keng Liao <wkliao@northwestern.edu>
 
 ### Project funding supports:
 This research was supported by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative. 
