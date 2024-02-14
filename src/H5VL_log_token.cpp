@@ -1,7 +1,17 @@
+<<<<<<< HEAD
+=======
+/*
+ *  Copyright (C) 2022, Northwestern University and Argonne National Laboratory
+ *  See COPYRIGHT notice in top-level directory.
+ */
+/* $Id$ */
+
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
+<<<<<<< HEAD
 #include "H5VL_logi.hpp"
 #include "H5VL_log_token.hpp"
 #include "H5VL_log_obj.hpp"
@@ -11,6 +21,21 @@ const H5VL_token_class_t H5VL_log_token_g {
 	H5VL_log_token_cmp,					   /* cmp */
 	H5VL_log_token_to_str,				   /* to_str */
 	H5VL_log_token_from_str /* from_str */ /* optional */
+=======
+#include <H5VLconnector.h>
+#include <H5VLconnector_passthru.h>
+
+#include <cassert>
+
+#include "H5VL_log_obj.hpp"
+#include "H5VL_log_token.hpp"
+#include "H5VL_logi.hpp"
+
+const H5VL_token_class_t H5VL_log_token_g {
+    H5VL_log_token_cmp,                    /* cmp */
+    H5VL_log_token_to_str,                 /* to_str */
+    H5VL_log_token_from_str /* from_str */ /* optional */
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 };
 
 /*---------------------------------------------------------------------------
@@ -25,6 +50,7 @@ const H5VL_token_class_t H5VL_log_token_g {
  *---------------------------------------------------------------------------
  */
 herr_t H5VL_log_token_cmp (void *obj,
+<<<<<<< HEAD
 									  const H5O_token_t *token1,
 									  const H5O_token_t *token2,
 									  int *cmp_value) {
@@ -44,6 +70,29 @@ herr_t H5VL_log_token_cmp (void *obj,
 	ret_value = H5VLtoken_cmp (o->uo, o->uvlid, token1, token2, cmp_value);
 
 	return ret_value;
+=======
+                           const H5O_token_t *token1,
+                           const H5O_token_t *token2,
+                           int *cmp_value) {
+    H5VL_log_obj_t *o = (H5VL_log_obj_t *)obj;
+    herr_t ret_value;
+
+#ifdef LOGVOL_DEBUG
+    if (H5VL_logi_debug_verbose ()) {
+        printf ("H5VL_log_token_cmp(%p, %p, %p, %p)\n", obj, token1, token2, cmp_value);
+    }
+#endif
+
+    /* Sanity checks */
+    assert (obj);
+    assert (token1);
+    assert (token2);
+    assert (cmp_value);
+
+    ret_value = H5VLtoken_cmp (o->uo, o->uvlid, token1, token2, cmp_value);
+
+    return ret_value;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_token_cmp() */
 
 /*---------------------------------------------------------------------------
@@ -57,6 +106,7 @@ herr_t H5VL_log_token_cmp (void *obj,
  *---------------------------------------------------------------------------
  */
 herr_t H5VL_log_token_to_str (void *obj,
+<<<<<<< HEAD
 										 H5I_type_t obj_type,
 										 const H5O_token_t *token,
 										 char **token_str) {
@@ -87,6 +137,28 @@ herr_t H5VL_log_token_to_str (void *obj,
 	ret_value = H5VLtoken_to_str (o->uo, obj_type, o->uvlid, token, token_str);
 
 	return ret_value;
+=======
+                              H5I_type_t obj_type,
+                              const H5O_token_t *token,
+                              char **token_str) {
+    H5VL_log_obj_t *o = (H5VL_log_obj_t *)obj;
+    herr_t ret_value;
+
+#ifdef LOGVOL_DEBUG
+    if (H5VL_logi_debug_verbose ()) {
+        printf ("H5VL_log_token_to_str(%p, obj_type, %p, %p)\n", obj, token, token_str);
+    }
+#endif
+
+    /* Sanity checks */
+    assert (obj);
+    assert (token);
+    assert (token_str);
+
+    ret_value = H5VLtoken_to_str (o->uo, obj_type, o->uvlid, token, token_str);
+
+    return ret_value;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_token_to_str() */
 
 /*---------------------------------------------------------------------------
@@ -100,6 +172,7 @@ herr_t H5VL_log_token_to_str (void *obj,
  *---------------------------------------------------------------------------
  */
 herr_t H5VL_log_token_from_str (void *obj,
+<<<<<<< HEAD
 										   H5I_type_t obj_type,
 										   const char *token_str,
 										   H5O_token_t *token) {
@@ -131,3 +204,26 @@ herr_t H5VL_log_token_from_str (void *obj,
 
 	return ret_value;
 } /* end H5VL_log_token_from_str() */
+=======
+                                H5I_type_t obj_type,
+                                const char *token_str,
+                                H5O_token_t *token) {
+    H5VL_log_obj_t *o = (H5VL_log_obj_t *)obj;
+    herr_t ret_value;
+
+#ifdef LOGVOL_DEBUG
+    if (H5VL_logi_debug_verbose ()) {
+        printf ("H5VL_log_token_from_str(%p, obj_type, %s, %p)\n", obj, token_str, token);
+    }
+#endif
+
+    /* Sanity checks */
+    assert (obj);
+    assert (token);
+    assert (token_str);
+
+    ret_value = H5VLtoken_from_str (o->uo, obj_type, o->uvlid, token_str, token);
+
+    return ret_value;
+} /* end H5VL_log_token_from_str() */
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a

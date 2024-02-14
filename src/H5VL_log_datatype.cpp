@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+=======
+/*
+ *  Copyright (C) 2022, Northwestern University and Argonne National Laboratory
+ *  See COPYRIGHT notice in top-level directory.
+ */
+/* $Id$ */
+
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -7,6 +16,7 @@
 #include "H5VL_log_obj.hpp"
 #include "H5VL_log_req.hpp"
 #include "H5VL_logi.hpp"
+<<<<<<< HEAD
 
 /* Datatype callbacks */
 const H5VL_datatype_class_t H5VL_log_datatype_g {
@@ -16,6 +26,18 @@ const H5VL_datatype_class_t H5VL_log_datatype_g {
 	H5VL_log_datatype_specific, /* specific     */
 	H5VL_log_datatype_optional, /* optional     */
 	H5VL_log_datatype_close		/* close        */
+=======
+#include "H5VL_logi_util.hpp"
+
+/* Datatype callbacks */
+const H5VL_datatype_class_t H5VL_log_datatype_g {
+    H5VL_log_datatype_commit,   /* commit       */
+    H5VL_log_datatype_open,     /* open         */
+    H5VL_log_datatype_get,      /* get          */
+    H5VL_log_datatype_specific, /* specific     */
+    H5VL_log_datatype_optional, /* optional     */
+    H5VL_log_datatype_close     /* close        */
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 };
 
 /*-------------------------------------------------------------------------
@@ -28,6 +50,7 @@ const H5VL_datatype_class_t H5VL_log_datatype_g {
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 static void *H5VL_log_datatype_commit (void *obj,
 									   const H5VL_loc_params_t *loc_params,
 									   const char *name,
@@ -64,6 +87,60 @@ static void *H5VL_log_datatype_commit (void *obj,
 err_out:;
 	delete tp;
 	return NULL;
+=======
+void *H5VL_log_datatype_commit (void *obj,
+                                const H5VL_loc_params_t *loc_params,
+                                const char *name,
+                                hid_t type_id,
+                                hid_t lcpl_id,
+                                hid_t tcpl_id,
+                                hid_t tapl_id,
+                                hid_t dxpl_id,
+                                void **req) {
+    H5VL_log_obj_t *tp = NULL;
+    H5VL_log_obj_t *op = (H5VL_log_obj_t *)obj;
+    H5VL_log_req_t *rp;
+    void **ureqp, *ureq;
+    char *iname = NULL;  // Internal name of object
+
+    try {
+        /* Rename user objects to avoid conflict with internal object */
+        if (op->fp->is_log_based_file) {
+            iname = H5VL_logi_name_remap (name);
+        } else {
+            iname = (char *)name;
+        }
+
+        tp = new H5VL_log_obj_t (op, H5I_DATATYPE);
+
+        if (req) {
+            rp    = new H5VL_log_req_t ();
+            ureqp = &ureq;
+        } else {
+            ureqp = NULL;
+        }
+
+        tp->uo = H5VLdatatype_commit (op->uo, loc_params, op->uvlid, iname, type_id, lcpl_id,
+                                      tcpl_id, tapl_id, dxpl_id, ureqp);
+        CHECK_PTR (tp->uo);
+
+        if (req) {
+            rp->append (ureq);
+            *req = rp;
+        }
+    }
+    H5VL_LOGI_EXP_CATCH
+
+    if (iname && iname != name) { free (iname); }
+
+    return (void *)tp;
+
+err_out:;
+    if (tp) { delete tp; }
+    if (iname && iname != name) { free (iname); }
+
+    return NULL;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_datatype_commit() */
 
 /*-------------------------------------------------------------------------
@@ -76,6 +153,7 @@ err_out:;
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 static void *H5VL_log_datatype_open (void *obj,
 									 const H5VL_loc_params_t *loc_params,
 									 const char *name,
@@ -110,6 +188,56 @@ err_out:;
 	delete tp;
 
 	return NULL;
+=======
+void *H5VL_log_datatype_open (void *obj,
+                              const H5VL_loc_params_t *loc_params,
+                              const char *name,
+                              hid_t tapl_id,
+                              hid_t dxpl_id,
+                              void **req) {
+    H5VL_log_obj_t *op = (H5VL_log_obj_t *)obj;
+    H5VL_log_obj_t *tp = NULL;
+    H5VL_log_req_t *rp;
+    void **ureqp, *ureq;
+    char *iname = NULL;  // Internal name of object
+
+    try {
+        /* Rename user objects to avoid conflict with internal object */
+        if (op->fp->is_log_based_file) {
+            iname = H5VL_logi_name_remap (name);
+        } else {
+            iname = (char *)name;
+        }
+
+        tp = new H5VL_log_obj_t (op, H5I_DATATYPE);
+
+        if (req) {
+            rp    = new H5VL_log_req_t ();
+            ureqp = &ureq;
+        } else {
+            ureqp = NULL;
+        }
+
+        tp->uo = H5VLdatatype_open (op->uo, loc_params, op->uvlid, iname, tapl_id, dxpl_id, ureqp);
+        CHECK_PTR (tp->uo);
+
+        if (req) {
+            rp->append (ureq);
+            *req = rp;
+        }
+    }
+    H5VL_LOGI_EXP_CATCH
+
+    if (iname && iname != name) { free (iname); }
+
+    return (void *)tp;
+
+err_out:;
+    if (tp) { delete tp; }
+    if (iname && iname != name) { free (iname); }
+
+    return NULL;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_datatype_open() */
 
 /*-------------------------------------------------------------------------
@@ -122,6 +250,7 @@ err_out:;
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 static herr_t H5VL_log_datatype_get (
 	void *dt, H5VL_datatype_get_t get_type, hid_t dxpl_id, void **req, va_list arguments) {
 	herr_t err		   = 0;
@@ -146,6 +275,34 @@ static herr_t H5VL_log_datatype_get (
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_datatype_get (void *dt, H5VL_datatype_get_args_t *args, hid_t dxpl_id, void **req) {
+    herr_t err         = 0;
+    H5VL_log_obj_t *op = (H5VL_log_obj_t *)dt;
+    H5VL_log_req_t *rp;
+    void **ureqp, *ureq;
+
+    try {
+        if (req) {
+            rp    = new H5VL_log_req_t ();
+            ureqp = &ureq;
+        } else {
+            ureqp = NULL;
+        }
+
+        err = H5VLdatatype_get (op->uo, op->uvlid, args, dxpl_id, ureqp);
+        CHECK_ERR
+
+        if (req) {
+            rp->append (ureq);
+            *req = rp;
+        }
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_datatype_get() */
 
 /*-------------------------------------------------------------------------
@@ -158,6 +315,7 @@ err_out:;
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 static herr_t H5VL_log_datatype_specific (void *obj,
 										  H5VL_datatype_specific_t specific_type,
 										  hid_t dxpl_id,
@@ -185,6 +343,37 @@ static herr_t H5VL_log_datatype_specific (void *obj,
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_datatype_specific (void *obj,
+                                   H5VL_datatype_specific_args_t *args,
+                                   hid_t dxpl_id,
+                                   void **req) {
+    herr_t err         = 0;
+    H5VL_log_obj_t *op = (H5VL_log_obj_t *)obj;
+    H5VL_log_req_t *rp;
+    void **ureqp, *ureq;
+
+    try {
+        if (req) {
+            rp    = new H5VL_log_req_t ();
+            ureqp = &ureq;
+        } else {
+            ureqp = NULL;
+        }
+
+        err = H5VLdatatype_specific (op->uo, op->uvlid, args, dxpl_id, ureqp);
+        CHECK_ERR
+
+        if (req) {
+            rp->append (ureq);
+            *req = rp;
+        }
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_datatype_specific() */
 
 /*-------------------------------------------------------------------------
@@ -197,6 +386,7 @@ err_out:;
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 static herr_t H5VL_log_datatype_optional (
 	void *obj, H5VL_datatype_optional_t opt_type, hid_t dxpl_id, void **req, va_list arguments) {
 	herr_t err		   = 0;
@@ -221,6 +411,37 @@ static herr_t H5VL_log_datatype_optional (
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_datatype_optional (void *obj,
+                                   H5VL_optional_args_t *args,
+                                   hid_t dxpl_id,
+                                   void **req) {
+    herr_t err         = 0;
+    H5VL_log_obj_t *op = (H5VL_log_obj_t *)obj;
+    H5VL_log_req_t *rp;
+    void **ureqp, *ureq;
+
+    try {
+        if (req) {
+            rp    = new H5VL_log_req_t ();
+            ureqp = &ureq;
+        } else {
+            ureqp = NULL;
+        }
+
+        err = H5VLdatatype_optional (op->uo, op->uvlid, args, dxpl_id, ureqp);
+        CHECK_ERR
+
+        if (req) {
+            rp->append (ureq);
+            *req = rp;
+        }
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_datatype_optional() */
 
 /*-------------------------------------------------------------------------
@@ -233,6 +454,7 @@ err_out:;
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 static herr_t H5VL_log_datatype_close (void *dt, hid_t dxpl_id, void **req) {
 	herr_t err		   = 0;
 	H5VL_log_obj_t *tp = (H5VL_log_obj_t *)dt;
@@ -244,4 +466,20 @@ static herr_t H5VL_log_datatype_close (void *dt, hid_t dxpl_id, void **req) {
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_datatype_close (void *dt, hid_t dxpl_id, void **req) {
+    herr_t err         = 0;
+    H5VL_log_obj_t *tp = (H5VL_log_obj_t *)dt;
+
+    try {
+        err = H5VLdatatype_close (tp->uo, tp->uvlid, dxpl_id, req);
+        CHECK_ERR
+
+        delete tp;
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_datatype_close() */

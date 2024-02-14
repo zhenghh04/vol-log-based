@@ -2,31 +2,27 @@
 # Copyright (C) 2021, Northwestern University and Argonne National Laboratory
 # See COPYRIGHT notice in top-level directory.
 #
-# $Id$
-#
 # @configure_input@
 
-AM_CPPFLAGS = -I$(top_srcdir)/src \
-              -I$(top_srcdir) \
-              -I$(srcdir) 
-if LOGVOL_DEBUG
-   AM_CPPFLAGS += -DLOGVOL_DEBUG=1
-endif
-if LOGVOL_PROFILING
-   AM_CPPFLAGS += -DLOGVOL_PROFILING=1
-endif
+SUBDIRS = h5lreplay h5ldump
+DIST_SUBDIRS = h5lreplay h5ldump
 
-bin_PROGRAMS = h5replay
-
-h5replay_SOURCES = h5replay.cpp
-
-CLEANFILES = core core.* *.gcda *.gcno *.gcov gmon.out
+bin_SCRIPTS = h5lconfig h5lenv.bash h5lenv.csh h5lpcc h5lpcxx
+EXTRA_DIST = h5lconfig.in h5lenv.bash.in h5lenv.csh.in h5lpcc.in h5lpcxx.in
 
 dist-hook:
-	$(SED_I) -e "s|RELEASE_DATE|@LOGVOL_RELEASE_DATE@|g" $(distdir)/main.cpp
-	$(SED_I) -e "1,10s|_LOGVOL_RELEASE_DATE_|@LOGVOL_RELEASE_DATE@|" $(distdir)/RELEASE_NOTES.md
-	$(SED_I) -e "1,10s|_LOGVOL_VERSION_|$(LOGVOL_VERSION)|" $(distdir)/RELEASE_NOTES.md
+	$(SED_I) -e "1,10s|_RELEASE_DATE_|@H5VL_LOG_RELEASE_DATE@|" $(distdir)/h5lconfig.in
+	$(SED_I) -e "1,10s|_VERSION_|$(VERSION)|" $(distdir)/h5lconfig.in
 
-tests-local: all
+install-exec-hook:
+	$(SED_I) -e "1,10s|_RELEASE_DATE_|@H5VL_LOG_RELEASE_DATE@|" $(DESTDIR)$(bindir)/h5lconfig
+	$(SED_I) -e "1,10s|_VERSION_|$(VERSION)|" $(DESTDIR)$(bindir)/h5lconfig
+	$(SED_I) -e 's|INSTALL_PREFIX|$(prefix)|g ; s|INSTALL_EXEC_PREFIX|$(exec_prefix)|g' $(DESTDIR)$(bindir)/h5lconfig
+	$(SED_I) -e 's|INSTALL_PREFIX|$(prefix)|g ; s|INSTALL_EXEC_PREFIX|$(exec_prefix)|g' $(DESTDIR)$(bindir)/h5lpcc
+	$(SED_I) -e 's|INSTALL_PREFIX|$(prefix)|g ; s|INSTALL_EXEC_PREFIX|$(exec_prefix)|g' $(DESTDIR)$(bindir)/h5lpcxx
 
-.PHONY:
+# build check targets but not invoke
+tests-local: all $(check_PROGRAMS)
+
+.PHONY: ptest tests
+

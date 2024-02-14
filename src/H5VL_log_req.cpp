@@ -1,15 +1,35 @@
+<<<<<<< HEAD
+=======
+/*
+ *  Copyright (C) 2022, Northwestern University and Argonne National Laboratory
+ *  See COPYRIGHT notice in top-level directory.
+ */
+/* $Id$ */
+
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
+<<<<<<< HEAD
 #include <H5VLpublic.h>
+=======
+#include <H5VLconnector.h>
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 
 #include <cassert>
 #include <cstdlib>
 
+<<<<<<< HEAD
 #include "H5VL_log_obj.hpp"
 #include "H5VL_log_reqi.hpp"
 #include "H5VL_log_req.hpp"
+=======
+#include "H5VL_log.h"
+#include "H5VL_log_obj.hpp"
+#include "H5VL_log_req.hpp"
+#include "H5VL_log_reqi.hpp"
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 #include "H5VL_logi.hpp"
 #include "H5VL_logi_debug.hpp"
 
@@ -17,6 +37,7 @@
 /* Function prototypes */
 /********************* */
 const H5VL_request_class_t H5VL_log_request_g {
+<<<<<<< HEAD
 	H5VL_log_request_wait,	 /* wait */
 	H5VL_log_request_notify, /* notify */
 	H5VL_log_request_cancel, /* cancel */
@@ -24,6 +45,15 @@ const H5VL_request_class_t H5VL_log_request_g {
 	H5VL_log_request_specific, /* specific */
 	H5VL_log_request_optional, /* optional */
 	H5VL_log_request_free	   /* free */
+=======
+    H5VL_log_request_wait,   /* wait */
+    H5VL_log_request_notify, /* notify */
+    H5VL_log_request_cancel, /* cancel */
+    //    H5VL_log_request_specific_reissue,                     /* specific_reissue */
+    H5VL_log_request_specific, /* specific */
+    H5VL_log_request_optional, /* optional */
+    H5VL_log_request_free      /* free */
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 };
 
 /*-------------------------------------------------------------------------
@@ -39,6 +69,7 @@ const H5VL_request_class_t H5VL_log_request_g {
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 herr_t H5VL_log_request_wait (void *obj, uint64_t timeout, H5ES_status_t *status) {
 	herr_t err = 0;
 	uint64_t t1, t2;
@@ -63,6 +94,34 @@ herr_t H5VL_log_request_wait (void *obj, uint64_t timeout, H5ES_status_t *status
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_request_wait (void *obj, uint64_t timeout, H5VL_request_status_t *status) {
+    herr_t err         = 0;
+    H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
+
+    try {
+        *status = H5VL_REQUEST_STATUS_SUCCEED;
+
+        for (auto &ureq : rp->ureqs) {
+            if (ureq.stat == H5VL_REQUEST_STATUS_IN_PROGRESS) {
+                err = H5VLrequest_wait (ureq.req, rp->uvlid, timeout, &(ureq.stat));
+                CHECK_ERR
+            }
+
+            if (ureq.stat == H5VL_REQUEST_STATUS_FAIL) {
+                *status = H5VL_REQUEST_STATUS_FAIL;
+            } else if (*status == H5VL_REQUEST_STATUS_SUCCEED) {
+                *status = ureq.stat;
+            }
+        }
+
+        if (*status != H5VL_REQUEST_STATUS_IN_PROGRESS) { delete rp; }
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_wait() */
 
 /*-------------------------------------------------------------------------
@@ -79,6 +138,7 @@ err_out:;
  *-------------------------------------------------------------------------
  */
 herr_t H5VL_log_request_notify (void *obj, H5VL_request_notify_t cb, void *ctx) {
+<<<<<<< HEAD
 	herr_t err = 0;
 	H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
 	H5VL_log_req_notify_ctx_t *cp;
@@ -98,6 +158,30 @@ herr_t H5VL_log_request_notify (void *obj, H5VL_request_notify_t cb, void *ctx) 
 
 err_out:;
 	return err;
+=======
+    herr_t err         = 0;
+    H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
+    H5VL_log_req_notify_ctx_t *cp;
+
+    try {
+        cp       = new H5VL_log_req_notify_ctx_t;
+        cp->cb   = cb;
+        cp->cnt  = rp->ureqs.size ();
+        cp->ctx  = ctx;
+        cp->stat = H5VL_REQUEST_STATUS_SUCCEED;
+
+        for (auto &ureq : rp->ureqs) {
+            err = H5VLrequest_notify (ureq.req, rp->uvlid, H5VL_log_reqi_notify_cb, cp);
+            CHECK_ERR
+        }
+
+        delete rp;
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_notify() */
 
 /*-------------------------------------------------------------------------
@@ -112,6 +196,7 @@ err_out:;
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 herr_t H5VL_log_request_cancel (void *obj) {
 	herr_t err = 0;
 	H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
@@ -125,6 +210,24 @@ herr_t H5VL_log_request_cancel (void *obj) {
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_request_cancel (void *obj, H5VL_request_status_t *status) {
+    herr_t err         = 0;
+    H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
+
+    try {
+        for (auto &ureq : rp->ureqs) {
+            err = H5VLrequest_cancel (ureq.req, rp->uvlid, status);
+            CHECK_ERR
+        }
+
+        delete rp;
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_cancel() */
 
 /*-------------------------------------------------------------------------
@@ -139,6 +242,7 @@ err_out:;
  *-------------------------------------------------------------------------
  */
 herr_t H5VL_log_request_specific_reissue (void *obj,
+<<<<<<< HEAD
 										  hid_t connector_id,
 										  H5VL_request_specific_t specific_type,
 										  ...) {
@@ -150,6 +254,19 @@ herr_t H5VL_log_request_specific_reissue (void *obj,
 	va_end (arguments);
 
 	return ret_value;
+=======
+                                          hid_t connector_id,
+                                          H5VL_request_specific_args_t *args) {
+    herr_t err = 0;
+
+    try {
+        err = H5VLrequest_specific (obj, connector_id, args);
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_specific_reissue() */
 
 /*-------------------------------------------------------------------------
@@ -162,6 +279,7 @@ herr_t H5VL_log_request_specific_reissue (void *obj,
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 herr_t H5VL_log_request_specific (void *obj,
 								  H5VL_request_specific_t specific_type,
 								  va_list arguments) {
@@ -180,6 +298,25 @@ herr_t H5VL_log_request_specific (void *obj,
 
 	err_out:;
 	return err;
+=======
+herr_t H5VL_log_request_specific (void *obj, H5VL_request_specific_args_t *args) {
+    herr_t err = 0;
+
+    try {
+        switch (args->op_type) {
+            case H5VL_REQUEST_GET_ERR_STACK:
+            // break;
+            case H5VL_REQUEST_GET_EXEC_TIME:
+            // break;
+            default:
+                RET_ERR ("args->op_type not supported")
+        }
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_specific() */
 
 /*-------------------------------------------------------------------------
@@ -192,6 +329,7 @@ herr_t H5VL_log_request_specific (void *obj,
  *
  *-------------------------------------------------------------------------
  */
+<<<<<<< HEAD
 herr_t H5VL_log_request_optional (void *obj, H5VL_request_optional_t opt_type, va_list arguments) {
 	herr_t err = 0;
 	H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
@@ -203,6 +341,22 @@ herr_t H5VL_log_request_optional (void *obj, H5VL_request_optional_t opt_type, v
 
 err_out:;
 	return err;
+=======
+herr_t H5VL_log_request_optional (void *obj, H5VL_optional_args_t *args) {
+    herr_t err         = 0;
+    H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
+
+    try {
+        for (auto &ureq : rp->ureqs) {
+            err = H5VLrequest_optional (ureq.req, rp->uvlid, args);
+            CHECK_ERR
+        }
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_optional() */
 
 /*-------------------------------------------------------------------------
@@ -217,6 +371,7 @@ err_out:;
  *-------------------------------------------------------------------------
  */
 herr_t H5VL_log_request_free (void *obj) {
+<<<<<<< HEAD
 	herr_t err = 0;
 	H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
 
@@ -229,4 +384,21 @@ herr_t H5VL_log_request_free (void *obj) {
 
 err_out:;
 	return err;
+=======
+    herr_t err         = 0;
+    H5VL_log_req_t *rp = (H5VL_log_req_t *)obj;
+
+    try {
+        for (auto &ureq : rp->ureqs) {
+            err = H5VLrequest_free (ureq.req, rp->uvlid);
+            CHECK_ERR
+        }
+
+        delete rp;
+    }
+    H5VL_LOGI_EXP_CATCH_ERR
+
+err_out:;
+    return err;
+>>>>>>> e3cb362c05e61722f6854d54b14270b33ec7c49a
 } /* end H5VL_log_request_free() */
