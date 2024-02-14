@@ -1,132 +1,52 @@
-## Log-based VOL - an HDF5 VOL Plugin that stores HDF5 datasets in a log-based storage layout
+## Log VOL - an HDF5 VOL connector for storing data in a time-log layout in files
 
-This software repository contains source codes implementing an [HDF5](https://www.hdfgroup.org) Virtual Object Layer ([VOL](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/developer_guide/main.pdf))) plugin that stores HDF5 datasets in a log-based storage layout. It allows applications to generate efficient log-based I/O requests using HDF5 APIs.
+This software repository contains source codes implementing Log VOL connector, an
+[HDF5](https://www.hdfgroup.org) Virtual Object Layer
+([VOL](https://portal.hdfgroup.org/display/HDF5/Virtual+Object+Layer)) plugin
+that stores HDF5 datasets in a storage layout similar to the time log. When using
+the Log VOL connector, write requests from an MPI process are appended one after
+another (as logs) in a contiguous space in the file. The contiguous spaces of
+multiple processes are appended one after another following the increasing order
+of processes' MPI rank IDs. Such a log layout I/O strategy avoids the expensive
+inter-process communication required when storing data in the canonical order.
+One of the pwoerful features of HDF5 VOL is to allow applications to make use
+a VOL connector by setting two environment variables without changing the
+application source codes. Using the Log VOL connector, exist HDF5 programs can
+achieve a better parallel write performance with no changes to their codes.
+Files created by the Log VOL conform with the HDF5 file format specification,
+but require the Log VOL to read them back.
 
-### Software Requirements
-* [HDF5 1.12.0](https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_1_12_0/source/hdf5-1.12.0.tar.gz)
-  + Parallel I/O support (--enable-parallel) is required
-* MPI C and C++ compilers
-  + The plugin uses the constant initializer; a C++ compiler supporting std 11 is required
-* Autotools utility
-  + autoconf 2.69
-  + automake 1.16.1
-  + libtoolize 2.4.6
-  + m4 1.4.18
+* Current build status:
+  * [![Ubuntu_mpich](https://github.com/DataLib-ECP/vol-log-based/actions/workflows/ubuntu_mpich.yml/badge.svg)](https://github.com/DataLib-ECP/vol-log-based/actions/workflows/ubuntu_mpich.yml)
+  * [![Ubuntu with OpenMPI](https://github.com/DataLib-ECP/vol-log-based/actions/workflows/ubuntu_openmpi.yml/badge.svg)](https://github.com/DataLib-ECP/vol-log-based/actions/workflows/ubuntu_openmpi.yml)
+  * [![Mac with MPICH](https://github.com/DataLib-ECP/vol-log-based/actions/workflows/mac_mpich.yml/badge.svg)](https://github.com/DataLib-ECP/vol-log-based/actions/workflows/mac_mpich.yml)
 
-### Building Steps
-* Build HDF5 with VOL and parallel I/O support
-  + Download HDF5 source code
-  + Run command ./autogen.sh
-  + Configure HDF5 with parallel I/O enabled
-  + Run make install
-  + Example commands are given below. This example will install
-    the HD5 library under the folder `${HOME}/HDF5`.
-    ```
-    % wget https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_1_12_0/source/hdf5-1.12.0.tar.gz
-    % tar -zxf hdf5-1.12.0.tar.gz 
-    % cd hdf5-1.12.0
-    % ./autogen
-    % ./configure --prefix=${HOME}/HDF5 --enable-parallel CC=mpicc
-    % make -j4 install
-    ```
-* Build this VOL plugin, `log-based vol.`
-  + Clone this VOL plugin repository
-  + Run command autoreconf -i
-  + Configure log-based VOL 
-    + Shared library is required to enable log-based VOL by environment variables
-    + Compile with zlib library to enable metadata compression
-  + Run test programs (make check) to check whether the VOl is working properly
-  + Example commands are given below.
-    ```
-    % git clone https://github.com/DataLib-ECP/vol-log-based.git
-    % cd log_io_vol
-    % autoreconf -i
-    % ./configure --prefix=${HOME}/Log_IO_VOL --with-hdf5=${HOME}/HDF5 --enable-shared --enable-zlib
-    % make -j 4
-    % make check
-    % make install
-    ```
-    The VOL plugin library is now installed under the folder `${HOME}/Log_IO_VOL.`
+### HDF5 VOL Connector ID
+* This Log VOL connector has been registered with the HDF group with
+  [Connector Identifier 514](https://portal.hdfgroup.org/display/support/Registered+VOL+Connectors).
+ 
+### Documents
+* [doc/userguide.md](doc/userguide.md) contains the compile and run instructions.
+* [doc/design.md](doc/design.md) outlines the design of Log VOL connector.
+* [doc/api.md](doc/api.md) describes the new APIs introduced in this VOL.
 
-### Running example programs
-* Build the log-based VOL
-* Compile the example programs under the example directory
-  + Run `make <program name>` to compile an example program
-  + Running `make tests` will compile all example programs
-* Run the example programs
-  + Run `make check` to run all example programs as test programs
-* Example commands are given below. This example will install
-    the HD5 library under the folder `${HOME}/HDF5`.
-    ```
-    % cd example
-    % make create_open
-    % ./create_open
-    Writing file_name = test.h5 at rank 0 
-    ```
-
-### Compile user programs that use this VOL plugin
-* Enable log-based VOL programmatically
-  * Include header file.
-    + Add the following line to your C/C++ source codes.
-      ```
-      #include <H5VL_log.h>
-      ```
-    + Header file `H5VL_log.h` is located in folder `${HOME}/Log_IO_VOL/include`
-    + Add `-I${HOME}/Log_IO_VOL/include` to your compile command line. For example,
-      ```
-      % mpicc prog.c -o prog.o -I${HOME}/Log_IO_VOL/include
-      ```
-  * Library file.
-    + The library file, `libH5VL_log.a`, is located under folder `${HOME}/Log_IO_VOL/lib`.
-    + Add `-L${HOME}/Log_IO_VOL/lib -lH5VL_log` to your compile/link command line. For example,
-      ```
-      % mpicc prog.o -o prog -L${HOME}/Log_IO_VOL/lib -lH5VL_log \
-                             -L${HOME}/HDF5/lib -lhdf5
-      ```
-  * Edit the source code to use log-based VOL when opening HDF5 files
-    + Register VOL callback structure using `H5VLregister_connector`
-    + Callback structure is named `H5VL_log_g`
-    + Set a file creation property list to use log-based vol
-    + For example,
-        ```
-        fapl_id = H5Pcreate(H5P_FILE_ACCESS); 
-        H5Pset_fapl_mpio(fapl_id, comm, info);
-        H5Pset_all_coll_metadata_ops(fapl_id, true);
-        H5Pset_coll_metadata_write(fapl_id, true);
-        log_vol_id = H5VLregister_connector(&H5VL_log_g, H5P_DEFAULT);
-        H5Pset_vol(fapl_id, log_vol_id, NULL);
-        ```
-    + See a full example program in `examples/create_open.c`
-* Enable log-based VOL dynamically through environment variables
-  + No additional action required on programming and compiling
-  + Tell HDF5 to use the log-based VOL through environment variables
-    + Append log-based VOL lib directory to shared object search path (LD_LIBRARY_PATH)
-      ```
-      % export LD_LIBRARY_PATH=${HOME}/Log_IO_VOL/lib
-      ```
-    + Append log-based VOL lib directory to HDF5 VOL search path (HDF5_PLUGIN_PATH)
-      ```
-      % export HDF5_PLUGIN_PATH=${HOME}/Log_IO_VOL/lib
-      ```
-    + Set log-based VOL as HDF5's default VOL (HDF5_VOL_CONNECTOR)
-      ```
-      % export HDF5_VOL_CONNECTOR="LOG under_vol=0;under_info={}"
-      ```
-
-### Current limitations
-  + Not compatible with parallel NetCDF4 applications
-  + Does not support dataset reading.
-    + Feature to read datasets in log-based storage layout is under development
-  + Utility to repack dataset in log-based storage layout into conventional storage layout is under development 
-
-### References
-* [HDF5 VOL application developer manual](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/developer_guide/main.pdf)
-* [HDF5 VOL plug-in developer manual](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/user_guide)
-* [HDF5 VOL RFC](https://bitbucket.hdfgroup.org/projects/HDFFV/repos/hdf5doc/browse/RFCs/HDF5/VOL/RFC)
+### Applicaton Case Studies and Experimental Results
+* [E3SM I/O case study](case_studies/E3SM_IO.md) - Energy Exascale Earth System Model ([E3SM](https://github.com/E3SM-Project/E3SM)).
+* [WRF I/O case study](case_studies/WRF.md) - Weather Research and Forecasting Model ([WRF](https://github.com/wrf-model/WRF)).
 
 ### Developers
-* Kai-yuan Hou <kai-yuanhou2020@u.northwestern.edu>
-* Wei-keng Liao <wkliao@northwestern.edu>
+* Wei-keng Liao <<wkliao@northwestern.edu>>
+* Kai-yuan Hou <<kai-yuanhou2020@u.northwestern.edu>>
+* Zanhua Huang <<zanhua@u.northwestern.edu>>
+
+Copyright (C) 2022, Northwestern University.
+See [COPYRIGHT](COPYRIGHT) notice in top-level directory.
 
 ### Project funding supports:
-This research was supported by the Exascale Computing Project (17-SC-20-SC), a joint project of the U.S. Department of Energy’s Office of Science and National Nuclear Security Administration, responsible for delivering a capable exascale ecosystem, including software, applications, and hardware technology, to support the nation’s exascale computing imperative. 
+Ongoing development and maintenance of the Log VOL connector are supported by the
+Exascale Computing Project (17-SC-20-SC), a joint project of the U.S.
+Department of Energy's Office of Science and National Nuclear Security
+Administration, responsible for delivering a capable exascale ecosystem,
+including software, applications, and hardware technology, to support the
+nation's exascale computing imperative.
+
